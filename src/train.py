@@ -19,24 +19,6 @@ def initialize_weights(model):
             nn.init.constant_(m.weight, 1)  # Gamma = 1
             nn.init.constant_(m.bias, 0)    # Beta = 0
 
-def get_disc_loss(fake_output, real_output, criterion):
-    """
-    Computes discriminator loss.
-    """
-    fake_loss = criterion(fake_output, torch.zeros_like(fake_output))
-    real_loss = criterion(real_output, torch.ones_like(real_output))
-    total_loss = fake_loss + real_loss
-    return total_loss
-
-def get_gen_loss(fake_output, fake_image, real_image, criterion, lambda_l1=100):
-    """
-    Computes generator loss.
-    """
-    adv_loss = criterion(fake_output, torch.ones_like(fake_output))
-    l1_recon_loss = nn.L1Loss()(fake_image, real_image) * lambda_l1
-    total_loss = adv_loss + l1_recon_loss
-    return total_loss
-
 def train_model(config):
     """
     Main training loop.
@@ -45,21 +27,24 @@ def train_model(config):
     """
     device = config['device']
 
-    # Initialize models
-    generator = UNetGenerator().to(device)
-    discriminator = PatchGANDiscriminator().to(device)
+    # Initialize models dynamically
+    generator = config['generator']().to(device)
+    discriminator = config['discriminator']().to(device)
 
     # Initialize weights
-    initialize_weights(generator)
-    initialize_weights(discriminator)
+    if 'initialize_weights' in config and config['initialize_weights']:
+        initialize_weights(generator)
+        initialize_weights(discriminator)
 
     # Define loss functions
+    gen_loss_fn = config['gen_loss_fn']
+    disc_loss_fn = config['disc_loss_fn']
     criterion = nn.BCEWithLogitsLoss()
 
     # Define optimizers
-    gen_optimizer = optim.Adam(generator.parameters(), lr=config['lr'], betas=(config['beta1'], config['beta2']))
-    disc_optimizer = optim.Adam(discriminator.parameters(), lr=config['lr'], betas=(config['beta1'], config['beta2']))
-
+    gen_optimizer = config['gen_optimizer'](generator.parameters())
+    disc_optimizer = config['disc_optimizer'](discriminator.parameters())
+    
     # Get dataloaders
     train_loader, val_loader = get_dataloaders(
         train_dir=config['train_dir'],
@@ -85,16 +70,16 @@ def train_model(config):
             fake_AB = generator(L)
             real_output = discriminator(L, AB)
             fake_output = discriminator(L, fake_AB.detach())
-            disc_loss = get_disc_loss(fake_output, real_output, criterion)
+            disc_loss = disc_loss_fn(fake_output, real_output, criterion)  # Pass the criterion
             disc_loss.backward()
             disc_optimizer.step()
 
             # Train Generator
             generator.zero_grad()
             fake_output = discriminator(L, fake_AB)
-            gen_loss = get_gen_loss(fake_output, fake_AB, AB, criterion, lambda_l1=config['lambda_l1'])
+            gen_loss = gen_loss_fn(fake_output, fake_AB, AB, criterion, lambda_l1=config['lambda_l1'])  # Pass extra params
             gen_loss.backward()
-            generator.step()
+            gen_optimizer.step()
 
             progress_bar.set_postfix(
                 D_Loss=f"{disc_loss.item():.4f}",
@@ -106,25 +91,6 @@ def train_model(config):
                 example_loader = torch.utils.data.DataLoader(val_loader.dataset, batch_size=1, shuffle=True, num_workers=4)
                 show_examples(generator, example_loader, device=device)
 
-    # Save the trained models
-    torch.save(generator.state_dict(), config['generator_path'])
-    torch.save(discriminator.state_dict(), config['discriminator_path'])
-
-if __name__ == "__main__":
-    config = {
-        'device': 'cuda' if torch.cuda.is_available() else 'cpu',
-        'lr': 2e-4,
-        'beta1': 0.5,
-        'beta2': 0.999,
-        'batch_size': 4,
-        'num_workers': 8,
-        'epochs': 10,
-        'train_dir': '/content/train2017',
-        'val_dir': '/content/val2017',
-        'lambda_l1': 100,
-        'show_interval': 1000,  # Adjust as needed
-        'generator_path': 'models/generator.pth',
-        'discriminator_path': 'models/discriminator.pth',
-    }
-
-    train_model(config)
+                # Save the trained models
+                torch.save(generator.state_dict(), config['generator_path'])
+                torch.save(discriminator.state_dict(), config['discriminator_path'])
