@@ -155,3 +155,6 @@ class PatchGANDiscriminator(nn.Module):
         x = self.layer4(x)
         x = self.final(x)
         return x
+
+
+
