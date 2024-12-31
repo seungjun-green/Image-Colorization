@@ -1,0 +1,7 @@
+venv/
+Desktop/
+
+# General Python and Jupyter ignore rules
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
