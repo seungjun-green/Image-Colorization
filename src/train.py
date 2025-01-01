@@ -72,14 +72,14 @@ def train_model(config):
             fake_AB = generator(L)
             real_output = discriminator(L, AB)
             fake_output = discriminator(L, fake_AB.detach())
-            disc_loss = disc_loss_fn(fake_output, real_output, criterion)  # Pass the criterion
+            disc_loss = disc_loss_fn(fake_output, real_output)  # Pass the criterion
             disc_loss.backward()
             disc_optimizer.step()
 
             # Train Generator
             generator.zero_grad()
             fake_output = discriminator(L, fake_AB)
-            gen_loss = gen_loss_fn(fake_output, fake_AB, AB, criterion, lambda_l1=config['lambda_l1'])  # Pass extra params
+            gen_loss = gen_loss_fn(fake_output, fake_AB, AB, lambda_l1=config['lambda_l1'])  # Pass extra params
             gen_loss.backward()
             gen_optimizer.step()
 
