@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
 import warnings
+import os
 
 from src.models import UNetGenerator, PatchGANDiscriminator
 from src.utils import lab_to_rgb, show_examples
@@ -93,12 +94,12 @@ def train_model(config):
                 show_examples(generator, example_loader, device=device)
 
                 # Save the trained models
-                torch.save(generator.state_dict(), config['generator_path'])
-                torch.save(discriminator.state_dict(), config['discriminator_path'])
+                torch.save(generator.state_dict(), os.path.join('checkpoints/gen', f"generator_epoch{epoch}_batch{batch_idx}.pth"))
+                torch.save(discriminator.state_dict(), os.path.join('checkpoints/disc', f"discriminator_epoch{epoch}_batch{batch_idx}.pth"))
             
             if gen_loss.item() < global_min:
                 # save the model checkpoint whenver the loss reaches a new minimum.
                 torch.save(generator.state_dict(), config['generator_path'])
                 torch.save(discriminator.state_dict(), config['discriminator_path'])
                 global_min = gen_loss.item()
-                
+                print(f"New best model saved with (gen)loss: {global_min:.4f}")

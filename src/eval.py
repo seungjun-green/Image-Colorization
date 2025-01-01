@@ -3,6 +3,8 @@ import torch.nn.functional as F
 from skimage.metrics import structural_similarity as ssim
 import numpy as np
 from src.utils import lab_to_rgb
+from src.data_processing import get_dataloaders
+from src.models import UNetGenerator
 
 def calculate_psnr(predicted, ground_truth):
     """
@@ -37,7 +39,7 @@ def calculate_ssim(predicted, ground_truth):
     return np.mean(ssim_values)
 
 
-def eval_model(generator, val_loader, device='cuda'):
+def eval_model(config, model_path, device='cuda'):
     """
     Evaluate the generator on the validation dataset using PSNR and SSIM.
     Args:
@@ -47,9 +49,20 @@ def eval_model(generator, val_loader, device='cuda'):
     Returns:
         dict: Average PSNR and SSIM scores across the validation set.
     """
+    generator = UNetGenerator().to(config['device'])
+    generator.load_state_dict(torch.load(model_path))
+    
     generator.eval()  # Set model to evaluation mode
     total_psnr = 0.0
     total_ssim = 0.0
+    
+    val_loader = get_dataloaders(
+    train_dir=None,
+    val_dir=config['val_dir'],
+    batch_size=config['batch_size'],
+    num_workers=config['num_workers']
+    )[1]
+    
     num_batches = len(val_loader)
 
     with torch.no_grad():  # Disable gradient calculations for evaluation
