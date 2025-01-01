@@ -34,7 +34,7 @@ def train_model(config):
     discriminator = config['discriminator']().to(device)
 
     # Initialize weights
-    if 'initialize_weights' in config and config['initialize_weights']:
+    if config['initialize_weights']:
         initialize_weights(generator)
         initialize_weights(discriminator)
 

@@ -57,7 +57,7 @@ def eval_model(config, model_path, device='cuda'):
     total_ssim = 0.0
     
     val_loader = get_dataloaders(
-    train_dir=None,
+    train_dir=config['train_dir'],
     val_dir=config['val_dir'],
     batch_size=config['batch_size'],
     num_workers=config['num_workers']
