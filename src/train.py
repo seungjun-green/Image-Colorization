@@ -26,6 +26,7 @@ def train_model(config):
         config (dict): Configuration dictionary containing hyperparameters and paths.
     """
     device = config['device']
+    global_min = config['glb_min']
 
     # Initialize models dynamically
     generator = config['generator']().to(device)
@@ -94,3 +95,10 @@ def train_model(config):
                 # Save the trained models
                 torch.save(generator.state_dict(), config['generator_path'])
                 torch.save(discriminator.state_dict(), config['discriminator_path'])
+            
+            if gen_loss.item() < global_min:
+                # save the model checkpoint whenver the loss reaches a new minimum.
+                torch.save(generator.state_dict(), config['generator_path'])
+                torch.save(discriminator.state_dict(), config['discriminator_path'])
+                global_min = gen_loss.item()
+                
