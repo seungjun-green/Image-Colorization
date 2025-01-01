@@ -77,10 +77,13 @@ def eval_model(config, model_path, device='cuda'):
             # Concatenate L and AB channels to form full LAB images
             fake_img = torch.cat((L, fake_AB), dim=1)  # Predicted image
             real_img = torch.cat((L, AB), dim=1)      # Ground truth image
+            
+            fake_L, fake_AB = fake_img[:, :1, :, :], fake_img[:, 1:, :, :]
+            real_L, real_AB = real_img[:, :1, :, :], real_img[:, 1:, :, :]
 
             # Convert LAB images to RGB for evaluation
-            fake_rgb = lab_to_rgb(fake_img)
-            real_rgb = lab_to_rgb(real_img)
+            fake_rgb = lab_to_rgb(fake_L, fake_AB)
+            real_rgb = lab_to_rgb(real_L, real_AB)
 
             # Compute PSNR for the current batch
             batch_psnr = calculate_psnr(fake_rgb, real_rgb)
