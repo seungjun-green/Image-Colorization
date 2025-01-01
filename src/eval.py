@@ -33,7 +33,13 @@ def calculate_ssim(predicted, ground_truth):
 
     ssim_values = []
     for i in range(predicted.shape[0]):
-        ssim_val = ssim(ground_truth[i], predicted[i], multichannel=True, data_range=1.0)
+        ssim_val = ssim(
+            ground_truth[i],
+            predicted[i],
+            multichannel=True,
+            data_range=1.0,
+            win_size=3  # Set win_size to a smaller value
+        )
         ssim_values.append(ssim_val)
 
     return np.mean(ssim_values)
