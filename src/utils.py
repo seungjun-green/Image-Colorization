@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.color import lab2rgb
+import torch.nn as nn
 
 class LabToRGB2(nn.Module):
     def __init__(self):
