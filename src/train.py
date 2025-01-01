@@ -41,7 +41,6 @@ def train_model(config):
     # Define loss functions
     gen_loss_fn = config['gen_loss_fn']
     disc_loss_fn = config['disc_loss_fn']
-    criterion = nn.BCEWithLogitsLoss()
 
     # Define optimizers
     gen_optimizer = config['gen_optimizer'](generator.parameters())
@@ -54,7 +53,9 @@ def train_model(config):
         batch_size=config['batch_size'],
         num_workers=config['num_workers']
     )
-
+    
+    total_batch = len(train_loader)
+    
     # Suppress specific warnings
     warnings.filterwarnings("ignore", message="Conversion from CIE-LAB, via XYZ to sRGB color space resulted in")
 
@@ -72,7 +73,7 @@ def train_model(config):
             fake_AB = generator(L)
             real_output = discriminator(L, AB)
             fake_output = discriminator(L, fake_AB.detach())
-            disc_loss = disc_loss_fn(fake_output, real_output)  # Pass the criterion
+            disc_loss = disc_loss_fn(fake_output, real_output)
             disc_loss.backward()
             disc_optimizer.step()
 
@@ -89,7 +90,7 @@ def train_model(config):
             )
 
             # Show examples periodically
-            if batch_idx % config['show_interval'] == 0 and batch_idx != 0:
+            if (batch_idx % config['show_interval'] == 0 or batch_idx == total_batch-1) and batch_idx != 0:
                 example_loader = torch.utils.data.DataLoader(val_loader.dataset, batch_size=1, shuffle=True, num_workers=4)
                 show_examples(generator, example_loader, device=device)
 

@@ -1,24 +1,8 @@
 import torch
-import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.color import lab2rgb
 
-def initialize_weights(model):
-    """
-    Initializes the weights of the model using Xavier initialization for Conv2D and ConvTranspose2D layers.
-    BatchNorm2D weights are set to 1 and biases to 0.
-    """
-    for m in model.modules():
-        if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
-            nn.init.xavier_normal_(m.weight)
-            if m.bias is not None:
-                nn.init.constant_(m.bias, 0.0)
-        elif isinstance(m, nn.BatchNorm2d):
-            nn.init.constant_(m.weight, 1.0)
-            nn.init.constant_(m.bias, 0.0)
-
-            
 class LabToRGB2(nn.Module):
     def __init__(self):
         super(LabToRGB2, self).__init__()
