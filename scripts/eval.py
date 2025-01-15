@@ -2,9 +2,9 @@ import torch
 import torch.nn.functional as F
 from skimage.metrics import structural_similarity as ssim
 import numpy as np
-from src.utils import lab_to_rgb
-from src.data_processing import get_dataloaders
-from src.models import UNetGenerator
+from utils import lab_to_rgb
+from data.data_processing import get_dataloaders
+from models import UNetGenerator
 
 def calculate_psnr(predicted, ground_truth):
     mse = F.mse_loss(predicted, ground_truth)

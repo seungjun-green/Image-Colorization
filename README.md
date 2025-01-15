@@ -108,23 +108,21 @@ utils/
    - Edit the JSON configuration file to match your system setup and requirements.
 
 5. **Train the Model**
-   ```bash
-   python scripts/train.py --config path/to/config.json
+   ```python
+   from scripts.train import ImageColorizationTrainer
+   
+   trainer = ImageColorizationTrainer("path/to/config.json")
+   trainer.train() 
+
+   trained_gen = trainer.generator
+   trained_disc = trainer.discriminator
    ```
 
 6. **Evaluate the Model**
-   ```bash
-   python scripts/eval.py --config path/to/config.json
+   ```python
+   from scripts.eval import eval_model
+   eval_model(val_config, 'path/to/generator_epoch4_batch29571.pth')
    ```
-
----
-
-## **Key Features**
-
-- **Flexible Model Configurations**: Easily switch between different combinations of generators and discriminators.
-- **Modular Codebase**: Well-structured project layout for easy customization and extension.
-- **Config-Driven**: Fully customizable via a single JSON configuration file.
-- **Checkpointing**: Automatically saves the best-performing models.
 
 ---
 
@@ -143,6 +141,3 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 ## **Acknowledgements**
 
 This project uses the COCO2017 dataset. Special thanks to the contributors of this dataset for their valuable work.
-```
-
-This updated README is structured, comprehensive, and user-friendly, making it easier for others to understand, navigate, and utilize your project.

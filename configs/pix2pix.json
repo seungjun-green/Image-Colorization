@@ -2,6 +2,8 @@
     "device": "cuda",
     "glb_min": 10,
     "initialize_weights": true,
+    "gen_type": "UNet",
+    "disc_type": "PatchGANDiscriminator",
     
     "gen_lr": 0.0002,
     "dic_lr": 0.0002,
