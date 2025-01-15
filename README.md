@@ -1,6 +1,3 @@
-Here’s the improved README in proper Markdown format:
-
-```markdown
 # **Image Colorization**
 
 This repository provides a flexible framework for training various model combinations for image colorization using the **COCO2017 dataset**. It supports multiple generator and discriminator configurations, allowing users to explore and optimize their models with ease.
