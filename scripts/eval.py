@@ -59,7 +59,6 @@ def eval_model(config, model_path, device='cuda'):
             fake_L, fake_AB = fake_img[:, :1, :, :], fake_img[:, 1:, :, :]
             real_L, real_AB = real_img[:, :1, :, :], real_img[:, 1:, :, :]
 
-            # convert LAB images to RGB for evaluation
             fake_rgb = lab_to_rgb(fake_L, fake_AB)
             real_rgb = lab_to_rgb(real_L, real_AB)
 
