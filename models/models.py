@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from models.backbones import CustomResNet
 
 class Downsample(nn.Module):
     """
@@ -144,3 +145,54 @@ class PatchGANDiscriminator(nn.Module):
         x = self.layer4(x)
         x = self.final(x)
         return x
+class ResNetUNetGenerator(nn.Module):
+    def __init__(self, in_channels=1, out_channels=2):
+        super().__init__()
+        self.encoder = CustomResNet()
+        
+        self.up1 = Upsample(512, 512, apply_dropout=True)
+        self.up2 = Upsample(1024, 512, apply_dropout=True)
+        self.up3 = Upsample(1024, 512, apply_dropout=True)
+        self.up4 = Upsample(1024, 512)
+        self.up5 = Upsample(1024, 256)
+        self.up6 = Upsample(512, 128)
+        self.up7 = Upsample(256, 64)
+
+        self.final = nn.ConvTranspose2d(128, out_channels, kernel_size=4, stride=2, padding=1)
+        self.tanh = nn.Tanh()
+    
+    def forward(self, x):
+        ''' Combination of ResNet50 as backbone and Original Decoder of UNet
+        Arguments:
+            input: 
+                x: (N, 3, 256, 256)
+        '''
+        x = x.repeat(1, 3, 1, 1) # (N, 3, 256, 256)
+        encoder_outputs = self.encoder(x)
+        
+        
+        u1 = self.up1(encoder_outputs[7])
+        u1 = torch.cat([u1, encoder_outputs[6]], dim=1)
+
+        u2 = self.up2(u1)
+        u2 = torch.cat([u2, encoder_outputs[5]], dim=1)
+
+        u3 = self.up3(u2)
+        u3 = torch.cat([u3, encoder_outputs[4]], dim=1)
+
+        u4 = self.up4(u3)
+        u4 = torch.cat([u4, encoder_outputs[3]], dim=1)
+
+        u5 = self.up5(u4)
+        u5 = torch.cat([u5, encoder_outputs[2]], dim=1)
+
+        u6 = self.up6(u5)
+        u6 = torch.cat([u6, encoder_outputs[2]], dim=1)
+
+        u7 = self.up7(u6)
+        u7 = torch.cat([u7, encoder_outputs[0]], dim=1)
+
+        out = self.final(u7)
+        out = self.tanh(out)
+
+        return out

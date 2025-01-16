@@ -17,7 +17,7 @@ def load_generator(model_type):
         model_type(str): config.generator
     '''
     ## load generator
-    if model_type == "U-NET":
+    if model_type == "UNET":
         return UNetGenerator()
     elif model_type == "ConvXNet+Unet":
         return UNetGenerator()
