@@ -7,13 +7,8 @@ This repository provides a flexible framework for training various model combina
 ## **Supported Model Combinations**
 
 - **UNetGenerator + PatchGANDiscriminator**  
-  A classic architecture with a U-Net generator and a PatchGAN discriminator for generating realistic outputs.
-
-- **ConvXNet (as backbone) + UNet + PatchGANDiscriminator**  
-  Incorporates ConvXNet as the backbone for the U-Net generator to enhance feature extraction and learning capabilities.
-
-- **ConvXNet (as backbone) + UNet + Vanilla Transformer + PatchGANDiscriminator**  
-  Combines ConvXNet and U-Net with a Vanilla Transformer to capture both local and global dependencies for improved colorization results.
+- **ResNet (as backbone) + UNet + PatchGANDiscriminator**  
+- **Attention UNet Generator + PatchGANDiscriminator**  
 
 ---
 

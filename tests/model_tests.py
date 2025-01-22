@@ -11,7 +11,7 @@ def test_generator():
     gen2 = ResNetUNetGenerator()
     
     sample_output1 = gen1(sample_input)
-    sample_output2 = gen1(sample_input)
+    sample_output2 = gen2(sample_input)
     
     expected_shape = (1, 2, 256, 256)
     
