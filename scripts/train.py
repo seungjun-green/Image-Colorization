@@ -29,6 +29,8 @@ class ImageColorizationTrainer:
         self.device = self.config['device']
         self.global_min = self.config['glb_min']
         self.training_ratio = self.config['training_ratio']
+        self.gen_type = self.config['gen_type']
+        self.disc_type = self.config['disc_type']
 
         # Initialize models
         self.generator = load_generator(self.config.gen_type).to(self.device)
@@ -74,7 +76,6 @@ class ImageColorizationTrainer:
         total_batches = len(self.train_loader)
         
 
-        
         warnings.filterwarnings(
             "ignore",
             message="Conversion from CIE-LAB, via XYZ to sRGB color space resulted in",
