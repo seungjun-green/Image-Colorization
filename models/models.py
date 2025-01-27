@@ -1,6 +1,12 @@
 import torch
 import torch.nn as nn
+import torch
+import torch.nn as nn
+import torchvision.models as models
 from models.backbones import CustomResNet
+
+
+
 
 class Downsample(nn.Module):
     """
@@ -151,8 +157,8 @@ class AttenionGate(nn.Module):
     def __init__(self, channels):
         super().__init__()
         self.channels = channels
-        self.conv1 = nn.Conv2d(channels,channels / 2, 1)
-        self.conv2 = nn.Conv2d(channels / 2, 1, 1)
+        self.conv1 = nn.Conv2d(channels,channels // 2, 1)
+        self.conv2 = nn.Conv2d(channels // 2, 1, 1)
     
     def forward(self, x):
         '''
@@ -164,7 +170,7 @@ class AttenionGate(nn.Module):
         x = self.conv1(x)
         x = torch.nn.functional.relu(x)
         x = self.conv2(x) # (N, 1, H, W)
-        x = self.sigmoid(x)
+        x = torch.sigmoid(x)
         
         # Step2. do the element wise multiplication
         x = original_x * x
@@ -224,28 +230,32 @@ class AttentionUNetGenerator(nn.Module):
 
         u3 = self.up3(u2)
         u3 = torch.cat([u3, d5], dim=1)
-        u3 = self.ag2(u3)
+        u3 = self.ag3(u3)
 
         u4 = self.up4(u3)
         u4 = torch.cat([u4, d4], dim=1)
-        u4 = self.ag2(u4)
+        u4 = self.ag4(u4)
 
         u5 = self.up5(u4)
         u5 = torch.cat([u5, d3], dim=1)
-        u5 = self.ag2(u5)
+        u5 = self.ag5(u5)
 
         u6 = self.up6(u5)
         u6 = torch.cat([u6, d2], dim=1)
-        u6 = self.ag2(u6)
+        u6 = self.ag6(u6)
 
         u7 = self.up7(u6)
         u7 = torch.cat([u7, d1], dim=1)
-        u7 = self.ag2(u7)
+        u7 = self.ag7(u7)
 
         out = self.final(u7)
         out = self.tanh(out)
 
         return out
+
+
+
+
 class ResNetUNetGenerator(nn.Module):
     def __init__(self, in_channels=1, out_channels=2):
         super().__init__()
@@ -268,7 +278,7 @@ class ResNetUNetGenerator(nn.Module):
             input: 
                 x: (N, 3, 256, 256)
         '''
-        x = x.repeat(1, 3, 1, 1) # (N, 3, 256, 256)
+        # x = x.repeat(1, 3, 1, 1) # (N, 3, 256, 256)
         encoder_outputs = self.encoder(x)
         
         
@@ -288,7 +298,7 @@ class ResNetUNetGenerator(nn.Module):
         u5 = torch.cat([u5, encoder_outputs[2]], dim=1)
 
         u6 = self.up6(u5)
-        u6 = torch.cat([u6, encoder_outputs[2]], dim=1)
+        u6 = torch.cat([u6, encoder_outputs[1]], dim=1)
 
         u7 = self.up7(u6)
         u7 = torch.cat([u7, encoder_outputs[0]], dim=1)

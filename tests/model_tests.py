@@ -3,6 +3,11 @@ sys.path.append("/Users/seungjunlee/Desktop/MLProjects/Image Colorization/")
 from models.models import *
 import torch
 
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters())
+
+
 # test generator
 def test_generator():
     sample_input = torch.randn(1, 1, 256, 256)
@@ -22,6 +27,11 @@ def test_generator():
     assert sample_output2.shape == expected_shape, f"gen2 output shape {sample_output2.shape} does not match expected {expected_shape}"
     assert sample_output2.shape == expected_shape, f"gen3 output shape {sample_output3.shape} does not match expected {expected_shape}"
     
+    # check number of parameters
+    print(f"Number of parameters in gen1 (UNetGenerator): {count_parameters(gen1)}")
+    print(f"Number of parameters in gen2 (ResNetUNetGenerator): {count_parameters(gen2)}")
+    print(f"Number of parameters in gen3 (AttentionUNetGenerator): {count_parameters(gen3)}")
+
     
     print("All generators produce outputs with the expected shape:", expected_shape)
     
