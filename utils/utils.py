@@ -80,7 +80,7 @@ def lab_to_rgb(L, AB):
 
 def show_examples(generator, example_loader, device='cuda'):
     generator.eval()
-    fig, axes = plt.subplots(5, 3, figsize=(6, 10))  # Increased figure size for clarity
+    fig, axes = plt.subplots(5, 3, figsize=(6, 10))
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
 
     with torch.no_grad():

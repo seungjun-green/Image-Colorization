@@ -4,21 +4,18 @@
     "initialize_weights": true,
     "gen_type": "UNet",
     "disc_type": "PatchGANDiscriminator",
-    
     "gen_lr": 0.0002,
     "dic_lr": 0.0002,
     "beta1": 0.5,
     "beta2": 0.999,
-    
     "train_dir": "",
     "val_dir": "",
     "batch_size": 16,
     "num_workers": 2,
-    
     "epochs": 5,
     "lambda_l1": 100,
     "show_interval": 100,
-
-    "generator_path": "checkpoints/gen/best_gen.pth",
-    "discriminator_path": "checkpoints/disc/best_disc.pth"
+    "taining_ratio": 1,
+    "generator_path": "checkpoints/gen",
+    "discriminator_path": "checkpoints/disc"
 }

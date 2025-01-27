@@ -20,10 +20,15 @@ class ImageColorizationTrainer:
             discriminator_cls (class): Class for the discriminator model.
             config_file (str): Path to the configuration JSON file.
         """
+        
+        os.makedirs('checkpoints/gen', exist_ok=True)
+        os.makedirs('checkpoints/disc', exist_ok=True)
+        
         # Load configuration
         self.config = self._load_config(config_file)
         self.device = self.config['device']
         self.global_min = self.config['glb_min']
+        self.training_ratio = self.config['training_ratio']
 
         # Initialize models
         self.generator = load_generator(self.config.gen_type).to(self.device)
@@ -67,6 +72,9 @@ class ImageColorizationTrainer:
     def train(self):
         """Main training loop."""
         total_batches = len(self.train_loader)
+        
+
+        
         warnings.filterwarnings(
             "ignore",
             message="Conversion from CIE-LAB, via XYZ to sRGB color space resulted in",
@@ -96,11 +104,12 @@ class ImageColorizationTrainer:
                 self.disc_optimizer.step()
 
                 # Train generator
-                self.generator.zero_grad()
-                fake_output = self.discriminator(L, fake_AB)
-                gen_loss = self.gen_loss_fn(fake_output, fake_AB, AB, lambda_l1=self.config['lambda_l1'])
-                gen_loss.backward()
-                self.gen_optimizer.step()
+                for _ in self.training_ratio:
+                    self.generator.zero_grad()
+                    fake_output = self.discriminator(L, fake_AB)
+                    gen_loss = self.gen_loss_fn(fake_output, fake_AB, AB, lambda_l1=self.config['lambda_l1'])
+                    gen_loss.backward()
+                    self.gen_optimizer.step()
 
                 progress_bar.set_postfix(
                     D_Loss=f"{disc_loss.item():.4f}",
@@ -109,28 +118,24 @@ class ImageColorizationTrainer:
 
                 # Show examples and save checkpoints
                 if (batch_idx % self.config['show_interval'] == 0 or batch_idx == total_batches - 1) and batch_idx != 0:
-                    self._show_and_save_examples(epoch, batch_idx, total_batches)
+                    self._show_and_save_examples(gen_loss.item(), disc_loss.item(), epoch, batch_idx)
 
                 # Save the best model
                 if gen_loss.item() < self.global_min:
-                    self._save_best_model(gen_loss.item())
+                    self._save_best_model(gen_loss.item(), disc_loss.item(), epoch, batch_idx)
 
-    def _show_and_save_examples(self, epoch, batch_idx, total_batches):
+    def _show_and_save_examples(self, gen_loss, disc_loss, epoch, batch_idx):
         """Displays and saves example results."""
-        example_loader = torch.utils.data.DataLoader(
-            self.val_loader.dataset, batch_size=1, shuffle=True, num_workers=4
-        )
+        example_loader = torch.utils.data.DataLoader(self.val_loader.dataset, batch_size=1, shuffle=True, num_workers=2)
         show_examples(self.generator, example_loader, device=self.device)
+        torch.save(self.generator.state_dict(), f"{self.config['generator_path']}/epoch{epoch}_batch{batch_idx}_{gen_loss}.pth")
+        torch.save(self.discriminator.state_dict(), f"{self.config['discriminator_path']}/epoch{epoch}_batch{batch_idx}_{disc_loss}.pth")
 
-        # Save checkpoint
-        os.makedirs('checkpoints/gen', exist_ok=True)
-        os.makedirs('checkpoints/disc', exist_ok=True)
-        torch.save(self.generator.state_dict(), f"checkpoints/gen/gen_epoch{epoch}_batch{batch_idx}.pth")
-        torch.save(self.discriminator.state_dict(), f"checkpoints/disc/disc_epoch{epoch}_batch{batch_idx}.pth")
-
-    def _save_best_model(self, gen_loss):
+    def _save_best_model(self, gen_loss, disc_loss, epoch, batch_idx):
         """Saves the best generator and discriminator models."""
-        torch.save(self.generator.state_dict(), self.config['generator_path'])
-        torch.save(self.discriminator.state_dict(), self.config['discriminator_path'])
+        example_loader = torch.utils.data.DataLoader(self.val_loader.dataset, batch_size=1, shuffle=True, num_workers=2)
+        show_examples(self.generator, example_loader, device=self.device)
+        torch.save(self.generator.state_dict(), f"{self.config['generator_path']}/BEST_GEN_epoch{epoch}_batch{batch_idx}_{gen_loss}.pth")
+        torch.save(self.discriminator.state_dict(), f"{self.config['discriminator_path']}/BEST_DISC_epoch{epoch}_batch{batch_idx}_{disc_loss}.pth")
         self.global_min = gen_loss
         print(f"New best model saved with (gen) loss: {self.global_min:.4f}")

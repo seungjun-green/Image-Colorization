@@ -17,12 +17,14 @@ def load_generator(model_type):
         model_type(str): config.generator
     '''
     ## load generator
-    if model_type == "UNET":
+    if model_type == "UNet":
         return UNetGenerator()
-    elif model_type == "ConvXNet+Unet":
-        return UNetGenerator()
+    elif model_type == "ResNetUNet":
+        return ResNetUNetGenerator()
+    elif model_type == "ResNetUNet":
+        return AttentionUNetGenerator()
     else:
-        return UNetGenerator()
+        raise ValueError("Unsupproted generator type")
     
 def load_discriminator(model_type):
     ''' Functions to load discriminator
@@ -35,4 +37,4 @@ def load_discriminator(model_type):
     elif model_type == "some other options":
         return PatchGANDiscriminator()
     else:
-        return PatchGANDiscriminator()
+        raise ValueError("Unsupproted discriminator type")
