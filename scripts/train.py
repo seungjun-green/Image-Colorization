@@ -11,7 +11,7 @@ from utils.train_utils import get_gen_loss, get_disc_loss
 from utils.model_utils import *
 
 class ImageColorizationTrainer:
-    def __init__(self, config_file):
+    def __init__(self, config_file, **kwargs):
         """
         Initializes the Image Colorization Trainer.
 
@@ -31,6 +31,9 @@ class ImageColorizationTrainer:
         self.training_ratio = self.config['training_ratio']
         self.gen_type = self.config['gen_type']
         self.disc_type = self.config['disc_type']
+        
+        self.train_dir = kwargs.get('train_dir', self.config.get('train_dir', ''))
+        self.val_dir = kwargs.get('val_dir', self.config.get('val_dir', ''))
 
         # Initialize models
         self.generator = load_generator(self.gen_type).to(self.device)
@@ -55,8 +58,8 @@ class ImageColorizationTrainer:
 
         # Initialize data loaders
         self.train_loader, self.val_loader = get_dataloaders(
-            train_dir=self.config['train_dir'],
-            val_dir=self.config['val_dir'],
+            train_dir=self.train_dir,
+            val_dir=self.val_dir,
             batch_size=self.config['batch_size'],
             num_workers=self.config['num_workers'],
         )
@@ -101,7 +104,7 @@ class ImageColorizationTrainer:
                 self.disc_optimizer.step()
 
                 # Train generator
-                for _ in self.training_ratio:
+                for _ in range(self.training_ratio):
                     self.generator.zero_grad()
                     fake_output = self.discriminator(L, fake_AB)
                     gen_loss = get_gen_loss(fake_output, fake_AB, AB, lambda_l1=self.config['lambda_l1'])
