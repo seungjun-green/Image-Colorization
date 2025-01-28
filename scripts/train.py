@@ -41,10 +41,6 @@ class ImageColorizationTrainer:
             initialize_weights(self.generator)
             initialize_weights(self.discriminator)
 
-        # Define loss functions
-        self.gen_loss_fn = get_gen_loss()
-        self.disc_loss_fn = get_disc_loss()
-
         # Define optimizers
         self.gen_optimizer = optim.Adam(
             self.generator.parameters(),
@@ -100,7 +96,7 @@ class ImageColorizationTrainer:
                 fake_AB = self.generator(L)
                 real_output = self.discriminator(L, AB)
                 fake_output = self.discriminator(L, fake_AB.detach())
-                disc_loss = self.disc_loss_fn(fake_output, real_output)
+                disc_loss = get_disc_loss(fake_output, real_output)
                 disc_loss.backward()
                 self.disc_optimizer.step()
 
@@ -108,7 +104,7 @@ class ImageColorizationTrainer:
                 for _ in self.training_ratio:
                     self.generator.zero_grad()
                     fake_output = self.discriminator(L, fake_AB)
-                    gen_loss = self.gen_loss_fn(fake_output, fake_AB, AB, lambda_l1=self.config['lambda_l1'])
+                    gen_loss = get_gen_loss(fake_output, fake_AB, AB, lambda_l1=self.config['lambda_l1'])
                     gen_loss.backward()
                     self.gen_optimizer.step()
 
