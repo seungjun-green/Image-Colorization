@@ -21,8 +21,7 @@ class ImageColorizationTrainer:
             config_file (str): Path to the configuration JSON file.
         """
         
-        os.makedirs('checkpoints/gen', exist_ok=True)
-        os.makedirs('checkpoints/disc', exist_ok=True)
+        
         
         # Load configuration
         self.config = self._load_config(config_file)
@@ -31,6 +30,12 @@ class ImageColorizationTrainer:
         self.training_ratio = self.config['training_ratio']
         self.gen_type = self.config['gen_type']
         self.disc_type = self.config['disc_type']
+        
+        self.generator_path = self.config['generator_path']
+        self.discriminator_path = self.config['discriminator_path']
+
+        os.makedirs(self.generator_path, exist_ok=True)
+        os.makedirs(self.discriminator_path, exist_ok=True)        
         
         self.train_dir = kwargs.get('train_dir', self.config.get('train_dir', ''))
         self.val_dir = kwargs.get('val_dir', self.config.get('val_dir', ''))

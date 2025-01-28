@@ -16,6 +16,6 @@
     "lambda_l1": 100,
     "show_interval": 100,
     "training_ratio": 1,
-    "generator_path": "checkpoints/gen",
-    "discriminator_path": "checkpoints/disc"
+    "generator_path": "checkpoints_Unet/gen",
+    "discriminator_path": "checkpoints_UNet/disc"
 }
