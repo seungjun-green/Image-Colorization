@@ -1,5 +1,5 @@
 {
-    "device": "cuda",
+    "device": "cpu",
     "glb_min": 10,
     "initialize_weights": true,
     "gen_type": "UNet",
