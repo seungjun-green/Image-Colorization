@@ -6,14 +6,6 @@ from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 from skimage.color import rgb2lab
 
-import os
-from PIL import Image
-import torch
-from torch.utils.data import Dataset
-import torchvision.transforms as transforms
-from skimage.color import rgb2lab
-import numpy as np
-
 class CocoColorizationDataset(Dataset):
     def __init__(self, image_dir, transform=None, grayscale_threshold=5, dark_threshold=30):
         self.image_dir = image_dir
@@ -30,12 +22,12 @@ class CocoColorizationDataset(Dataset):
                     with Image.open(file_path) as img:
                         img = img.convert('RGB')
                         
-                        # Skip grayscale images
+                        # skip grayscale images
                         if self._is_grayscale(img):
                             print(f"Skipping grayscale image: {filename}")
                             continue
                             
-                        # Skip dark images
+                        # skip dark images
                         if self._is_too_dark(img):
                             print(f"Skipping dark image: {filename}")
                             continue
@@ -45,7 +37,6 @@ class CocoColorizationDataset(Dataset):
                     print(f"Error processing {filename}: {e}")
 
     def _is_grayscale(self, img):
-        # Use smaller image for faster processing
         small_img = img.resize((64, 64))
         r, g, b = small_img.split()
         
@@ -53,7 +44,6 @@ class CocoColorizationDataset(Dataset):
         g = np.array(g, dtype=np.float32)
         b = np.array(b, dtype=np.float32)
 
-        # Calculate mean differences between channels
         rg_diff = np.mean(np.abs(r - g))
         gb_diff = np.mean(np.abs(g - b))
         avg_diff = (rg_diff + gb_diff) / 2.0
@@ -61,7 +51,6 @@ class CocoColorizationDataset(Dataset):
         return avg_diff < self.grayscale_threshold
 
     def _is_too_dark(self, img):
-        # Use smaller image for faster processing
         small_img = img.resize((64, 64))
         gray_img = small_img.convert('L')
         avg_luminance = np.array(gray_img).mean()
