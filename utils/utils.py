@@ -103,17 +103,17 @@ def show_examples(generator, example_loader, device='cuda'):
             axes[idx, 0].imshow(L_np, cmap="gray", vmin=0, vmax=100)
             axes[idx, 0].axis("off")
             if idx == 0:
-                axes[idx, 0].set_title("L Channel (Grayscale)")
+                axes[idx, 0].set_title("L")
 
             axes[idx, 1].imshow(real_rgb_np)
             axes[idx, 1].axis("off")
             if idx == 0:
-                axes[idx, 1].set_title("Original Color (L + AB)")
+                axes[idx, 1].set_title("Original")
 
             axes[idx, 2].imshow(fake_rgb_np)
             axes[idx, 2].axis("off")
             if idx == 0:
-                axes[idx, 2].set_title("Predicted Color (L + ^AB)")
+                axes[idx, 2].set_title("Predicted")
 
     plt.show()
     plt.close(fig)
