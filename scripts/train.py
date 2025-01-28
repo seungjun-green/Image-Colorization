@@ -33,8 +33,8 @@ class ImageColorizationTrainer:
         self.disc_type = self.config['disc_type']
 
         # Initialize models
-        self.generator = load_generator(self.config.gen_type).to(self.device)
-        self.discriminator = load_discriminator(self.config.disc_type).to(self.device)
+        self.generator = load_generator(self.gen_type).to(self.device)
+        self.discriminator = load_discriminator(self.disc_type).to(self.device)
 
         # Initialize weights if specified
         if self.config['initialize_weights']:
