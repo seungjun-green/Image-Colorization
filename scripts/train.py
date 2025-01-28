@@ -133,8 +133,6 @@ class ImageColorizationTrainer:
 
     def _save_best_model(self, gen_loss, disc_loss, epoch, batch_idx):
         """Saves the best generator and discriminator models."""
-        example_loader = torch.utils.data.DataLoader(self.val_loader.dataset, batch_size=1, shuffle=True, num_workers=2)
-        show_examples(self.generator, example_loader, device=self.device)
         torch.save(self.generator.state_dict(), f"{self.config['generator_path']}/BEST_GEN_epoch{epoch}_batch{batch_idx}_{gen_loss}.pth")
         torch.save(self.discriminator.state_dict(), f"{self.config['discriminator_path']}/BEST_DISC_epoch{epoch}_batch{batch_idx}_{disc_loss}.pth")
         self.global_min = gen_loss
