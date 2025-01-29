@@ -5,20 +5,19 @@ import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 from skimage.color import rgb2lab
+from tqdm import tqdm
 
 class CocoColorizationDataset(Dataset):
-    def __init__(self, image_dir, transform=None, grayscale_threshold=5, dark_threshold=30):
+    def __init__(self, image_dir, transform=None, grayscale_threshold=5):
         self.image_dir = image_dir
         self.transform = transform
         self.grayscale_threshold = grayscale_threshold
-        self.dark_threshold = dark_threshold
         self.image_files = []
         
         self.num_gray = 0
-        self.num_dark = 0
 
         # Filter images during initialization
-        for filename in os.listdir(image_dir):
+        for filename in tqdm(os.listdir(image_dir), desc="Filtering images"):
             if filename.lower().endswith(('.jpg', '.png', '.jpeg')):
                 file_path = os.path.join(image_dir, filename)
                 try:
@@ -30,16 +29,12 @@ class CocoColorizationDataset(Dataset):
                             self.num_gray += 1
                             continue
                             
-                        # skip dark images
-                        if self._is_too_dark(img):
-                            self.num_dark += 1
-                            continue
-                            
                         self.image_files.append(filename)
                 except Exception as e:
                     print(f"Error processing {filename}: {e}")
                     
-        print(f"Skippped: gray: {self.num_gray} | dark: {self.num_dark}")
+                    
+        print(f"Skippped: gray: {self.num_gray}")
 
     def _is_grayscale(self, img):
         small_img = img.resize((64, 64))
@@ -54,13 +49,6 @@ class CocoColorizationDataset(Dataset):
         avg_diff = (rg_diff + gb_diff) / 2.0
         
         return avg_diff < self.grayscale_threshold
-
-    def _is_too_dark(self, img):
-        small_img = img.resize((64, 64))
-        gray_img = small_img.convert('L')
-        avg_luminance = np.array(gray_img).mean()
-        
-        return avg_luminance < self.dark_threshold
 
     def __len__(self):
         return len(self.image_files)
