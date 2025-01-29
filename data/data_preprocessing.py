@@ -13,6 +13,9 @@ class CocoColorizationDataset(Dataset):
         self.grayscale_threshold = grayscale_threshold
         self.dark_threshold = dark_threshold
         self.image_files = []
+        
+        self.num_gray = 0
+        self.num_dark = 0
 
         # Filter images during initialization
         for filename in os.listdir(image_dir):
@@ -24,17 +27,19 @@ class CocoColorizationDataset(Dataset):
                         
                         # skip grayscale images
                         if self._is_grayscale(img):
-                            print(f"Skipping grayscale image: {filename}")
+                            self.num_gray += 1
                             continue
                             
                         # skip dark images
                         if self._is_too_dark(img):
-                            print(f"Skipping dark image: {filename}")
+                            self.num_dark += 1
                             continue
                             
                         self.image_files.append(filename)
                 except Exception as e:
                     print(f"Error processing {filename}: {e}")
+                    
+        print(f"Skippped: gray: {self.num_gray} | dark: {self.num_dark}")
 
     def _is_grayscale(self, img):
         small_img = img.resize((64, 64))
