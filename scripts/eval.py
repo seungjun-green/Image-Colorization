@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from skimage.metrics import structural_similarity as ssim
 import numpy as np
 from utils.utils import lab_to_rgb
-from data.data_processing import get_dataloaders
+from data.data_preprocessing import get_dataloaders
 from models import UNetGenerator
 
 def calculate_psnr(predicted, ground_truth):
