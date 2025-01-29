@@ -4,7 +4,8 @@ from skimage.metrics import structural_similarity as ssim
 import numpy as np
 from utils.utils import lab_to_rgb
 from data.data_preprocessing import get_dataloaders
-from models import UNetGenerator
+from models import *
+from utils.model_utils import *
 
 def calculate_psnr(predicted, ground_truth):
     mse = F.mse_loss(predicted, ground_truth)
@@ -30,7 +31,7 @@ def calculate_ssim(predicted, ground_truth):
 
 
 def eval_model(config, model_path, device='cuda'):
-    generator = UNetGenerator().to(config['device'])
+    generator = load_generator(config['gen_type']).to(device)
     generator.load_state_dict(torch.load(model_path))
     
     generator.eval() 
