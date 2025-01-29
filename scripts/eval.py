@@ -1,3 +1,4 @@
+import json
 import torch
 import torch.nn.functional as F
 from skimage.metrics import structural_similarity as ssim
@@ -31,6 +32,10 @@ def calculate_ssim(predicted, ground_truth):
 
 
 def eval_model(config, model_path, device='cuda'):
+    with open(config, 'r') as f:
+        config = json.load(f)
+        
+        
     generator = load_generator(config['gen_type']).to(device)
     generator.load_state_dict(torch.load(model_path))
     
