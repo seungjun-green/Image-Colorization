@@ -14,7 +14,7 @@ This repository provides a flexible framework for training various model combina
 
 | Model Type                                  | SSIM | PSNR |
 |----------------------------------------------|------|------|
-| UNetGenerator + PatchGANDiscriminator        |      |      |
+| UNetGenerator + PatchGANDiscriminator        | 0.5426 |  19.4519  |
 | ResNet (as backbone) + UNet + PatchGANDiscriminator |      |      |
 | Attention UNet Generator + PatchGANDiscriminator |      |      |
 
