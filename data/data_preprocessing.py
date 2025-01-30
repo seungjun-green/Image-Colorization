@@ -87,3 +87,19 @@ def get_dataloaders(train_dir, val_dir, batch_size=16, num_workers=8):
     )
 
     return train_loader, val_loader
+
+
+def get_val_dataloader(val_dir, batch_size=16, num_workers=8):
+    transform = transforms.Compose([
+        transforms.Resize((256, 256)),
+        transforms.ToTensor()
+    ])
+
+    val_dataset = CocoColorizationDataset(val_dir, transform=transform)
+
+    val_loader = torch.utils.data.DataLoader(
+        val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers
+    )
+    
+    return val_loader
+    

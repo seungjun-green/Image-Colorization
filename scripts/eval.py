@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from skimage.metrics import structural_similarity as ssim
 import numpy as np
 from utils.utils import lab_to_rgb
-from data.data_preprocessing import get_dataloaders
+from data.data_preprocessing import get_val_dataloader
 from models import *
 from utils.model_utils import *
 
@@ -53,17 +53,15 @@ def eval_model(config, model_path, device, **kwargs):
 
     generator.load_state_dict(torch.load(model_path, map_location=map_location))
 
-    
     generator.eval() 
     total_psnr = 0.0
     total_ssim = 0.0
     
-    val_loader = get_dataloaders(
-    train_dir=config['train_dir'],
-    val_dir=config['val_dir'],
-    batch_size=config['batch_size'],
-    num_workers=config['num_workers']
-    )[1]
+    val_loader = get_val_dataloader(
+        val_dir=config['val_dir'],
+        batch_size=config['batch_size'],
+        num_workers=config['num_workers']
+    )
     
     num_batches = len(val_loader)
 
