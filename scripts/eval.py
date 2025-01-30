@@ -1,4 +1,5 @@
 import json
+import warnings
 import torch
 import torch.nn.functional as F
 from skimage.metrics import structural_similarity as ssim
@@ -31,13 +32,27 @@ def calculate_ssim(predicted, ground_truth):
     return np.mean(ssim_values)
 
 
-def eval_model(config, model_path, device='cuda'):
+def eval_model(config, model_path, device, **kwargs):
     with open(config, 'r') as f:
         config = json.load(f)
         
+    if 'train_dir' in kwargs:
+        config['train_dir'] = kwargs['train_dir']
+    if 'val_dir' in kwargs:
+        config['val_dir'] = kwargs['val_dir']
         
     generator = load_generator(config['gen_type']).to(device)
-    generator.load_state_dict(torch.load(model_path))
+    
+    if device == "cuda" and torch.cuda.is_available():
+        generator.to(device)
+        map_location = None 
+    else:
+        device = "cpu" 
+        generator.to(device) 
+        map_location = torch.device('cpu')
+
+    generator.load_state_dict(torch.load(model_path, map_location=map_location))
+
     
     generator.eval() 
     total_psnr = 0.0
@@ -65,8 +80,10 @@ def eval_model(config, model_path, device='cuda'):
             fake_L, fake_AB = fake_img[:, :1, :, :], fake_img[:, 1:, :, :]
             real_L, real_AB = real_img[:, :1, :, :], real_img[:, 1:, :, :]
 
-            fake_rgb = lab_to_rgb(fake_L, fake_AB)
-            real_rgb = lab_to_rgb(real_L, real_AB)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", UserWarning)
+                fake_rgb = lab_to_rgb(fake_L, fake_AB)
+                real_rgb = lab_to_rgb(real_L, real_AB)
 
             batch_psnr = calculate_psnr(fake_rgb, real_rgb)
             total_psnr += batch_psnr
