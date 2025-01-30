@@ -14,7 +14,7 @@
     "num_workers": 2,
     "epochs": 5,
     "lambda_l1": 100,
-    "show_interval": 500,
+    "show_interval": 3,
     "training_ratio": 1,
     "generator_path": "checkpoints_test/gen",
     "discriminator_path": "checkpoints_test/disc"

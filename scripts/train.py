@@ -5,10 +5,11 @@ from tqdm import tqdm
 import warnings
 import os
 import json
-from utils.utils import lab_to_rgb, show_examples
+from utils.utils import show_examples
 from data.data_preprocessing import get_dataloaders
 from utils.train_utils import get_gen_loss, get_disc_loss
 from utils.model_utils import *
+from scripts.eval import log_eval
 
 class ImageColorizationTrainer:
     def __init__(self, config_file, **kwargs):
@@ -124,10 +125,14 @@ class ImageColorizationTrainer:
                 # Show examples and save checkpoints
                 if (batch_idx % self.config['show_interval'] == 0 or batch_idx == total_batches - 1) and batch_idx != 0:
                     self._show_and_save_examples(gen_loss.item(), disc_loss.item(), epoch, batch_idx)
-
+                    print(log_eval(self.generator, self.val_loader, 16, self.config['device']))
+                    self.generator.train()
+                    
                 # Save the best model
                 if gen_loss.item() < self.global_min:
                     self._save_best_model(gen_loss.item(), disc_loss.item(), epoch, batch_idx)
+                    print(log_eval(self.generator, self.val_loader, 16, self.config['device']))
+                    self.generator.train()
 
     def _show_and_save_examples(self, gen_loss, disc_loss, epoch, batch_idx):
         """Displays and saves example results."""

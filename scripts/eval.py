@@ -32,7 +32,47 @@ def calculate_ssim(predicted, ground_truth):
     return np.mean(ssim_values)
 
 
+
+def log_eval(generator, val_loader, num_batches, device):
+    ''' func to do eval during training
+    '''
+    generator.eval()
+    total_psnr = 0.0
+    total_ssim = 0.0
+    
+    with torch.no_grad(): 
+        for L, AB in val_loader:
+            L = L.to(device)
+            AB = AB.to(device)
+            
+            fake_AB = generator(L)
+            fake_img = torch.cat((L, fake_AB), dim=1)
+            
+            real_img = torch.cat((L, AB), dim=1) 
+            
+            fake_L, fake_AB = fake_img[:, :1, :, :], fake_img[:, 1:, :, :]
+            real_L, real_AB = real_img[:, :1, :, :], real_img[:, 1:, :, :]
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", UserWarning)
+                fake_rgb = lab_to_rgb(fake_L, fake_AB)
+                real_rgb = lab_to_rgb(real_L, real_AB)
+
+            batch_psnr = calculate_psnr(fake_rgb, real_rgb)
+            total_psnr += batch_psnr
+
+            batch_ssim = calculate_ssim(fake_rgb, real_rgb)
+            total_ssim += batch_ssim
+            
+
+    return {
+        'psnr': total_psnr / num_batches,
+        'ssim': total_ssim / num_batches,
+    }
+
 def eval_model(config, model_path, device, **kwargs):
+    ''' func to eval model from checkpoint
+    '''
     with open(config, 'r') as f:
         config = json.load(f)
         
