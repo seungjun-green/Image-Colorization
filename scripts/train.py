@@ -10,6 +10,7 @@ from data.data_preprocessing import get_dataloaders
 from utils.train_utils import get_gen_loss, get_disc_loss
 from utils.model_utils import *
 from scripts.eval import log_eval
+from lpips import LPIPS 
 
 class ImageColorizationTrainer:
     def __init__(self, config_file, **kwargs):
@@ -69,6 +70,14 @@ class ImageColorizationTrainer:
             batch_size=self.config['batch_size'],
             num_workers=self.config['num_workers'],
         )
+        
+        # load model for evaluation
+        self.eval_model = LPIPS(net='alex').to(self.device)
+        
+        # early stopping
+        self.best_val_score = float('inf') 
+        self.early_stopping_patience = self.config['patience']
+        self.no_improvement_count = 0  
 
     @staticmethod
     def _load_config(json_path):
@@ -124,26 +133,34 @@ class ImageColorizationTrainer:
 
                 # Show examples and save checkpoints
                 if (batch_idx % self.config['show_interval'] == 0 or batch_idx == total_batches - 1) and batch_idx != 0:
-                    self._show_and_save_examples(gen_loss.item(), disc_loss.item(), epoch, batch_idx)
-                    print(log_eval(self.generator, self.val_loader, 16, self.config['device']))
-                    self.generator.train()
-                    
-                # Save the best model
-                if gen_loss.item() < self.global_min:
-                    self._save_best_model(gen_loss.item(), disc_loss.item(), epoch, batch_idx)
-                    print(log_eval(self.generator, self.val_loader, 16, self.config['device']))
+                    stop_training = self._show_and_save_examples(gen_loss.item(), disc_loss.item(), epoch, batch_idx)
+                    if stop_training:
+                        return
                     self.generator.train()
 
     def _show_and_save_examples(self, gen_loss, disc_loss, epoch, batch_idx):
-        """Displays and saves example results."""
+        """display some examples and save model weights"""
+        # here u need to implement
+        '''
+        - patience
+        
+        '''
+        # show some examples
         example_loader = torch.utils.data.DataLoader(self.val_loader.dataset, batch_size=1, shuffle=True, num_workers=2)
         show_examples(self.generator, example_loader, device=self.device)
-        torch.save(self.generator.state_dict(), f"{self.config['generator_path']}/epoch{epoch}_batch{batch_idx}_{gen_loss}.pth")
-        torch.save(self.discriminator.state_dict(), f"{self.config['discriminator_path']}/epoch{epoch}_batch{batch_idx}_{disc_loss}.pth")
-
-    def _save_best_model(self, gen_loss, disc_loss, epoch, batch_idx):
-        """Saves the best generator and discriminator models."""
-        torch.save(self.generator.state_dict(), f"{self.config['generator_path']}/BEST_GEN_epoch{epoch}_batch{batch_idx}_{gen_loss}.pth")
-        torch.save(self.discriminator.state_dict(), f"{self.config['discriminator_path']}/BEST_DISC_epoch{epoch}_batch{batch_idx}_{disc_loss}.pth")
-        self.global_min = gen_loss
-        print(f"New best model saved with (gen) loss: {self.global_min:.4f}")
+        
+        # get the current score on the validation set.
+        val_score = log_eval(self.generator, self.eval_model, self.val_loader, 16, self.config['device'])
+        
+        # patience checker, if val score does not get improved 5 times, then stop the training
+        if val_score < self.best_val_score:
+            self.best_val_score = val_score
+            self.no_improvement_count = 0
+            torch.save(self.generator.state_dict(), f"{self.config['generator_path']}/epoch{epoch}_batch{batch_idx}_{round(val_score, 4)}.pth")
+            torch.save(self.discriminator.state_dict(), f"{self.config['discriminator_path']}/epoch{epoch}_batch{batch_idx}_{round(val_score, 4)}.pth")
+            return False
+        else:
+            self.no_improvement_count += 1
+            if self.no_improvement_count >= self.early_stopping_patience:
+                print(f"Early stopping triggered after {self.early_stopping_patience} consecutive logs without improvement.")
+                return True

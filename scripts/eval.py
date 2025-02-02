@@ -3,7 +3,7 @@ import warnings
 import torch
 import torch.nn.functional as F
 from skimage.metrics import structural_similarity as ssim
-from lpips import LPIPS 
+
 
 import numpy as np
 from utils.utils import lab_to_rgb
@@ -35,7 +35,7 @@ def calculate_ssim(predicted, ground_truth):
 
 
 
-def log_eval(generator, val_loader, num_batches, device):
+def log_eval(generator, lpips_model, val_loader, num_batches, device):
     ''' func to do eval during training
     '''
     generator.eval()
@@ -47,10 +47,6 @@ def log_eval(generator, val_loader, num_batches, device):
             L = L.to(device)
             AB = AB.to(device)
             
-
-            
-            lpips_model = LPIPS(net='alex').to(device)
-            
             fake_AB = generator(L)
             fake_img = torch.cat((L, fake_AB), dim=1)
             
@@ -58,20 +54,11 @@ def log_eval(generator, val_loader, num_batches, device):
             
             fake_L, fake_AB = fake_img[:, :1, :, :], fake_img[:, 1:, :, :]
             real_L, real_AB = real_img[:, :1, :, :], real_img[:, 1:, :, :]
-            
-            print(f"shape of fake_L: {fake_L.shape}")
-            print(f"shape of fake_AB: {fake_AB.shape}")
-            print(f"shape of real_L: {real_L.shape}")
-            print(f"shape of real_AB: {real_AB.shape}")
-            
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", UserWarning)
                 fake_rgb = lab_to_rgb(fake_L, fake_AB)
                 real_rgb = lab_to_rgb(real_L, real_AB)
-                
-            print(f"shape of fake_rgb: {fake_rgb.shape}")
-            print(f"shape of real_rgb: {real_rgb.shape}")
             
             fake_rgb = np.array(fake_rgb)
             real_rgb = np.array(real_rgb)
@@ -85,7 +72,7 @@ def log_eval(generator, val_loader, num_batches, device):
             total_lpips += batch_lpips
             total_lpips_t += batch_lpips_t
             
-    return {'lpips': total_lpips / num_batches, 'lpips_t': total_lpips_t / num_batches}
+    return total_lpips / num_batches
 
 def eval_model(config, model_path, device, **kwargs):
     ''' func to eval model from checkpoint
