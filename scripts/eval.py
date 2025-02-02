@@ -3,6 +3,8 @@ import warnings
 import torch
 import torch.nn.functional as F
 from skimage.metrics import structural_similarity as ssim
+from lpips import LPIPS 
+
 import numpy as np
 from utils.utils import lab_to_rgb
 from data.data_preprocessing import get_val_dataloader
@@ -37,38 +39,53 @@ def log_eval(generator, val_loader, num_batches, device):
     ''' func to do eval during training
     '''
     generator.eval()
-    total_psnr = 0.0
-    total_ssim = 0.0
+    total_lpips = 0.0
+    total_lpips_t = 0.0
     
     with torch.no_grad(): 
         for L, AB in val_loader:
             L = L.to(device)
             AB = AB.to(device)
             
+
+            
+            lpips_model = LPIPS(net='alex').to(device)
+            
             fake_AB = generator(L)
             fake_img = torch.cat((L, fake_AB), dim=1)
             
-            real_img = torch.cat((L, AB), dim=1) 
+            real_img = torch.cat((L, AB), dim=1)
             
             fake_L, fake_AB = fake_img[:, :1, :, :], fake_img[:, 1:, :, :]
             real_L, real_AB = real_img[:, :1, :, :], real_img[:, 1:, :, :]
+            
+            print(f"shape of fake_L: {fake_L.shape}")
+            print(f"shape of fake_AB: {fake_AB.shape}")
+            print(f"shape of real_L: {real_L.shape}")
+            print(f"shape of real_AB: {real_AB.shape}")
+            
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", UserWarning)
                 fake_rgb = lab_to_rgb(fake_L, fake_AB)
                 real_rgb = lab_to_rgb(real_L, real_AB)
-
-            batch_psnr = calculate_psnr(fake_rgb, real_rgb)
-            total_psnr += batch_psnr
-
-            batch_ssim = calculate_ssim(fake_rgb, real_rgb)
-            total_ssim += batch_ssim
+                
+            print(f"shape of fake_rgb: {fake_rgb.shape}")
+            print(f"shape of real_rgb: {real_rgb.shape}")
             
+            fake_rgb = np.array(fake_rgb)
+            real_rgb = np.array(real_rgb)
+            
+            fake_rgb_tensor = torch.from_numpy(fake_rgb).to(device).float() / 255.0
+            real_rgb_tensor = torch.from_numpy(real_rgb).to(device).float() / 255.0
 
-    return {
-        'psnr': total_psnr / num_batches,
-        'ssim': total_ssim / num_batches,
-    }
+            batch_lpips = lpips_model(fake_rgb_tensor, real_rgb_tensor).mean().item()
+            batch_lpips_t = lpips_model(real_rgb_tensor, real_rgb_tensor).mean().item()
+
+            total_lpips += batch_lpips
+            total_lpips_t += batch_lpips_t
+            
+    return {'lpips': total_lpips / num_batches, 'lpips_t': total_lpips_t / num_batches}
 
 def eval_model(config, model_path, device, **kwargs):
     ''' func to eval model from checkpoint
@@ -117,11 +134,16 @@ def eval_model(config, model_path, device, **kwargs):
             
             fake_L, fake_AB = fake_img[:, :1, :, :], fake_img[:, 1:, :, :]
             real_L, real_AB = real_img[:, :1, :, :], real_img[:, 1:, :, :]
+            
+            
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", UserWarning)
                 fake_rgb = lab_to_rgb(fake_L, fake_AB)
                 real_rgb = lab_to_rgb(real_L, real_AB)
+                
+            
+
 
             batch_psnr = calculate_psnr(fake_rgb, real_rgb)
             total_psnr += batch_psnr
