@@ -5,3 +5,4 @@ __pycache__/
 *.jpg
 *.pth
 checkpoints_test/
+test.ipynb

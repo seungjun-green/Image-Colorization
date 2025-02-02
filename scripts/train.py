@@ -133,31 +133,26 @@ class ImageColorizationTrainer:
 
                 # Show examples and save checkpoints
                 if (batch_idx % self.config['show_interval'] == 0 or batch_idx == total_batches - 1) and batch_idx != 0:
-                    stop_training = self._show_and_save_examples(gen_loss.item(), disc_loss.item(), epoch, batch_idx)
+                    stop_training = self._show_and_save_examples(gen_loss.item(), epoch, batch_idx)
                     if stop_training:
                         return
                     self.generator.train()
 
-    def _show_and_save_examples(self, gen_loss, disc_loss, epoch, batch_idx):
+    def _show_and_save_examples(self, gen_loss, epoch, batch_idx):
         """display some examples and save model weights"""
-        # here u need to implement
-        '''
-        - patience
-        
-        '''
         # show some examples
         example_loader = torch.utils.data.DataLoader(self.val_loader.dataset, batch_size=1, shuffle=True, num_workers=2)
         show_examples(self.generator, example_loader, device=self.device)
         
-        # get the current score on the validation set.
+        # get the current score on the validation set and print it
         val_score = log_eval(self.generator, self.eval_model, self.val_loader, 16, self.config['device'])
+        print(f"Epoch: {epoch+1} Step: {batch_idx+1} | val lpips score: {round(val_score, 4)}, val gen loss: {round(gen_loss, 4)}")
         
         # patience checker, if val score does not get improved 5 times, then stop the training
         if val_score < self.best_val_score:
             self.best_val_score = val_score
             self.no_improvement_count = 0
             torch.save(self.generator.state_dict(), f"{self.config['generator_path']}/epoch{epoch}_batch{batch_idx}_{round(val_score, 4)}.pth")
-            torch.save(self.discriminator.state_dict(), f"{self.config['discriminator_path']}/epoch{epoch}_batch{batch_idx}_{round(val_score, 4)}.pth")
             return False
         else:
             self.no_improvement_count += 1
