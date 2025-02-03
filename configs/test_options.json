@@ -17,7 +17,6 @@
     "show_interval": 1,
     "training_ratio": 1,
     "patience": 5,
-    "testing": false,
     "generator_path": "checkpoints_test/gen",
     "discriminator_path": "checkpoints_test/disc"
 }
