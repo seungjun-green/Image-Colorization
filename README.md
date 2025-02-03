@@ -23,6 +23,8 @@ You can check the ResNet UNet model weights at [here](https://huggingface.co/Seu
 
 ResNet UNet model example inference
 <img width="375" alt="Screenshot 2025-02-03 at 7 24 29 PM" src="https://github.com/user-attachments/assets/44342903-1b3c-491e-9223-5e5d040d837d" />
+
+
 ---
 
 ## **Configuration File**
