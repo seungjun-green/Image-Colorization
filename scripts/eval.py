@@ -11,27 +11,6 @@ from data.data_preprocessing import get_val_dataloader
 from models import *
 from utils.model_utils import *
 
-def calculate_psnr(predicted, ground_truth):
-    mse = F.mse_loss(predicted, ground_truth)
-    psnr = 20 * torch.log10(1.0 / torch.sqrt(mse))
-    return psnr.item()
-
-def calculate_ssim(predicted, ground_truth):
-    predicted = predicted.permute(0, 2, 3, 1).cpu().numpy()
-    ground_truth = ground_truth.permute(0, 2, 3, 1).cpu().numpy()
-
-    ssim_values = []
-    for i in range(predicted.shape[0]):
-        ssim_val = ssim(
-            ground_truth[i],
-            predicted[i],
-            multichannel=True,
-            data_range=1.0,
-            win_size=3
-        )
-        ssim_values.append(ssim_val)
-
-    return np.mean(ssim_values)
 
 
 
@@ -40,7 +19,6 @@ def log_eval(generator, lpips_model, val_loader, num_batches, device):
     '''
     generator.eval()
     total_lpips = 0.0
-    total_lpips_t = 0.0
     
     with torch.no_grad(): 
         for L, AB in val_loader:
@@ -63,14 +41,15 @@ def log_eval(generator, lpips_model, val_loader, num_batches, device):
             fake_rgb = np.array(fake_rgb)
             real_rgb = np.array(real_rgb)
             
-            fake_rgb_tensor = torch.from_numpy(fake_rgb).to(device).float() / 255.0
-            real_rgb_tensor = torch.from_numpy(real_rgb).to(device).float() / 255.0
+            fake_rgb_tensor = torch.from_numpy(fake_rgb).to(device).float()
+            real_rgb_tensor = torch.from_numpy(real_rgb).to(device).float()
+            
+            fake_rgb_tensor = (fake_rgb_tensor * 2) - 1
+            real_rgb_tensor = (real_rgb_tensor * 2) - 1
+
 
             batch_lpips = lpips_model(fake_rgb_tensor, real_rgb_tensor).mean().item()
-            batch_lpips_t = lpips_model(real_rgb_tensor, real_rgb_tensor).mean().item()
-
             total_lpips += batch_lpips
-            total_lpips_t += batch_lpips_t
             
     return total_lpips / num_batches
 
