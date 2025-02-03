@@ -69,6 +69,7 @@ class ImageColorizationTrainer:
             val_dir=self.val_dir,
             batch_size=self.config['batch_size'],
             num_workers=self.config['num_workers'],
+            testing=self.config['testing']
         )
         
         # load model for evaluation
