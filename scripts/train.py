@@ -146,7 +146,7 @@ class ImageColorizationTrainer:
         show_examples(self.generator, example_loader, device=self.device)
         
         # get the current score on the validation set and print it
-        val_score = log_eval(self.generator, self.eval_model, self.val_loader, 16, self.config['device'])
+        val_score = log_eval(self.generator, self.eval_model, self.val_loader, self.config['device'])
         print(f"Epoch: {epoch+1} Step: {batch_idx+1} | val lpips score: {round(val_score, 4)}, val gen loss: {round(gen_loss, 4)}")
         
         # patience checker, if val score does not get improved 5 times, then stop the training

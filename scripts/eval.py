@@ -9,7 +9,7 @@ from data.data_preprocessing import get_val_dataloader
 from models import *
 from utils.model_utils import *
 
-def log_eval(generator, lpips_model, val_loader, num_batches, device):
+def log_eval(generator, lpips_model, val_loader, device):
     ''' func to do eval during training
     '''
     generator.eval()
@@ -39,11 +39,6 @@ def log_eval(generator, lpips_model, val_loader, num_batches, device):
             fake_rgb_tensor = torch.from_numpy(fake_rgb).to(device).float() 
             real_rgb_tensor = torch.from_numpy(real_rgb).to(device).float() 
             
-            # if device=="cuda":
-            #     fake_rgb_tensor = fake_rgb_tensor / 255.0
-            #     real_rgb_tensor = real_rgb_tensor / 255.0
-
-            
             fake_rgb_tensor = (fake_rgb_tensor * 2) - 1
             real_rgb_tensor = (real_rgb_tensor * 2) - 1
 
@@ -51,4 +46,4 @@ def log_eval(generator, lpips_model, val_loader, num_batches, device):
             batch_lpips = lpips_model(fake_rgb_tensor, real_rgb_tensor).mean().item()
             total_lpips += batch_lpips
             
-    return total_lpips / num_batches
+    return total_lpips / len(val_loader)
