@@ -18,6 +18,9 @@ This repository provides a flexible framework for training various model combina
 | ResNet (as backbone) + UNet + PatchGANDiscriminator | 0.2098 |
 | Attention UNet Generator + PatchGANDiscriminator | 0.2247 |
 
+
+You can check the ResNet UNet model weights at [here](https://huggingface.co/Seungjun/ResNet_UNet_imgColorization)
+
 ---
 
 ## **Configuration File**
