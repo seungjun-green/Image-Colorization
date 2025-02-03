@@ -39,9 +39,9 @@ def log_eval(generator, lpips_model, val_loader, num_batches, device):
             fake_rgb_tensor = torch.from_numpy(fake_rgb).to(device).float() 
             real_rgb_tensor = torch.from_numpy(real_rgb).to(device).float() 
             
-            if device=="cuda":
-                fake_rgb_tensor = fake_rgb_tensor / 255.0
-                real_rgb_tensor = real_rgb_tensor / 255.0
+            # if device=="cuda":
+            #     fake_rgb_tensor = fake_rgb_tensor / 255.0
+            #     real_rgb_tensor = real_rgb_tensor / 255.0
 
             
             fake_rgb_tensor = (fake_rgb_tensor * 2) - 1
