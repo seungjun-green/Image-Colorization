@@ -132,7 +132,7 @@ class ImageColorizationTrainer:
                 )
 
                 # Show examples and save checkpoints
-                if (batch_idx % self.config['show_interval'] == 0 or batch_idx == total_batches - 1) and batch_idx != 0:
+                if (batch_idx % self.config['show_interval'] == 0 or batch_idx == total_batches - 1):
                     stop_training = self._show_and_save_examples(gen_loss.item(), epoch, batch_idx)
                     if stop_training:
                         return
