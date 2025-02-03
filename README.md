@@ -14,9 +14,9 @@ This repository provides a flexible framework for training various model combina
 
 | Model Type                                  | LPIPS |
 |----------------------------------------------|------|
-| UNetGenerator + PatchGANDiscriminator        | 0.2154 |
-| ResNet (as backbone) + UNet + PatchGANDiscriminator |      |
-| Attention UNet Generator + PatchGANDiscriminator |      |
+| UNetGenerator + PatchGANDiscriminator        | 0.2150 |
+| ResNet (as backbone) + UNet + PatchGANDiscriminator | 0.2098 |
+| Attention UNet Generator + PatchGANDiscriminator | 0.2247 |
 
 ---
 
