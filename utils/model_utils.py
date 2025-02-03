@@ -21,7 +21,7 @@ def load_generator(model_type):
         return UNetGenerator()
     elif model_type == "ResNetUNet":
         return ResNetUNetGenerator()
-    elif model_type == "ResNetUNet":
+    elif model_type == "AttentionUNet":
         return AttentionUNetGenerator()
     else:
         raise ValueError("Unsupproted generator type")
